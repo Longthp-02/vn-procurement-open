@@ -1,0 +1,46 @@
+name: Connectivity check
+
+# Checks whether GitHub-hosted runners (outside Vietnam) can reach muasamcong.
+# The result decides whether the crawler can run on GitHub Actions or needs a VPS in Vietnam.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/connectivity-check.yml
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Runner location
+        run: curl -sS --max-time 15 https://ipinfo.io/json || true
+
+      - name: Probe muasamcong
+        run: |
+          set +e
+          urls=(
+            "https://muasamcong.mpi.gov.vn/"
+            "https://muasamcong.mpi.gov.vn/web/guest/contractor-selection"
+          )
+          ok=0
+          for url in "${urls[@]}"; do
+            echo "== $url"
+            curl -sS -L --max-time 30 -o body.html \
+              -A "Mozilla/5.0 (X11; Linux x86_64) vn-procurement-open connectivity check" \
+              -w "status=%{http_code} time=%{time_total}s size=%{size_download}B ip=%{remote_ip}\n" "$url"
+            rc=$?
+            echo "curl exit code: $rc"
+            if [ $rc -eq 0 ]; then
+              ok=$((ok+1))
+              echo "-- title: $(grep -o '<title>[^<]*' body.html | head -1 | sed 's/<title>//')"
+            fi
+          done
+          echo
+          if [ $ok -eq ${#urls[@]} ]; then
+            echo "RESULT: reachable from GitHub Actions"
+          else
+            echo "RESULT: blocked or unreachable from GitHub Actions"
+            exit 1
+          fi
