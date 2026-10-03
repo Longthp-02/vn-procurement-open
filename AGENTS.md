@@ -38,7 +38,8 @@ A free, citizen-facing website that makes Vietnam's public procurement data (mua
 python pipeline/make_sample.py && python pipeline/build_site_data.py --sample   # sample data
 python -m pytest pipeline/tests --cov=pipeline                                    # pipeline tests
 ruff check pipeline spike                                                          # pipeline lint
-cd web && npm ci && npm run typecheck && npm test && npm run build                 # web checks
+cd web && npm ci && npm run typecheck && npm run coverage && npm run build       # web checks
+python scripts/prove_red_green.py                                                 # tests fail without implementation
 ```
 
 ## Task Workflow

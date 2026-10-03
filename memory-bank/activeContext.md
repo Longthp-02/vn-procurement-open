@@ -3,7 +3,7 @@
 _Update after every meaningful AI session._
 
 ## Current Focus
-Walking skeleton: sample data → site JSON → static site → deploy. AI engineering foundation and CI added.
+Web MVP on sample data is built and tested (PR `feat/web-mvp`); waiting for Cloudflare secrets to deploy.
 
 ## Latest Decisions (2026-10-03)
 - Static-first, zero-cost architecture (no server/database)
@@ -18,4 +18,5 @@ Walking skeleton: sample data → site JSON → static site → deploy. AI engin
 - Spike results from the live site
 
 ## Next Safe Step
-Owner runs the spike (`spike/README.md`) and shares `report/report.md`; then plan the crawler.
+1. Owner adds `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets → CI deploys.
+2. Owner runs the spike (`spike/README.md`) and shares `report/report.md`; then plan the crawler.

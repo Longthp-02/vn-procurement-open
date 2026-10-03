@@ -14,7 +14,7 @@
 - Do not modify or weaken the test.
 - Refactor only after green.
 - Do not accept flaky tests.
-- Prove the suite bites: `scripts/prove-red-green.sh <impl-file> <test-command>` must show red without the implementation and green with it.
+- Prove the suite bites: add the module to `scripts/red-green-targets.json`; `python scripts/prove_red_green.py --only <name>` must show red without the implementation and green with it.
 
 ## Before Coding, State
 1. Test strategy decision

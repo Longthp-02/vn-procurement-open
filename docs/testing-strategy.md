@@ -3,7 +3,7 @@
 ## Principles
 - Tests are the definition of done. CI (`.github/workflows/ci.yml`) runs everything on every push and PR; deploy depends on it.
 - TDD for new behavior: one failing test → confirm it fails for the right reason → minimum code → green → refactor.
-- Proof that tests bite: a test suite must fail when the implementation is removed or stubbed. Run `scripts/prove-red-green.sh` when adding a module.
+- Proof that tests bite: a test suite must fail when the implementation is removed or stubbed. `python scripts/prove_red_green.py` does this for every module listed in `scripts/red-green-targets.json`; CI runs it on every PR. Add new modules to that list.
 
 ## Walking Skeleton
 First prove the thinnest end-to-end path (sample data → site JSON → home page → deploy), then add slices.
@@ -28,4 +28,4 @@ A flaky test is a failing test. Fix or delete it with an explanation in the PR; 
 - Test behavior, not implementation details.
 - Cover the happy path, important edge cases (unknown bids, empty groups, zero estimate, not awarded) and error states.
 - Do not encode current broken behavior. Do not weaken or delete tests to pass.
-- Coverage is reported in CI. Thresholds: pipeline ≥ 85% lines, web `src/lib` ≥ 85% lines (TODO: verify targets).
+- Coverage is enforced in CI: pipeline ≥ 90% lines (`--cov-fail-under=90`); web ≥ 90% lines/functions/statements and ≥ 80% branches (`web/vite.config.ts`). TODO: verify targets with owner.
