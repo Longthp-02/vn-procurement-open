@@ -78,7 +78,7 @@ export type Tender = {
   context: {
     sector: SectorBaseline;
     buyer_tenders: number;
-    buyer_since: string;
+    buyer_since: string | null;
     winner_wins_with_buyer: number | null;
   };
 };
@@ -101,7 +101,7 @@ export type Buyer = GroupIndicators & {
   name: string;
   kind: string;
   province: { id: string; name: string };
-  since: string;
+  since: string | null;
   documents: Record<DocKey, Indicator>;
   top_contractors: ShareRow[];
   recent: TenderRow[];

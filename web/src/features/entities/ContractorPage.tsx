@@ -59,7 +59,7 @@ function ContractorView({ c }: { c: Contractor }) {
                 <div class="spread">
                   <Link href={`/buyer/${b.id}`}>{b.name}</Link>
                   <span class="num muted">
-                    {b.count} gói · {formatPercent(b.share)}
+                    {vi.packages(String(b.count))} · {formatPercent(b.share)}
                   </span>
                 </div>
                 <Bar ratio={b.share} tone="orange" />

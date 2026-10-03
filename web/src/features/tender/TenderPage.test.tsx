@@ -1,5 +1,6 @@
 import { cleanup, screen, within } from '@testing-library/preact';
 import { afterEach, describe, expect, it } from 'vitest';
+import { fakeDataSource, meta, tender, tenderUnknownBids } from '../../test/fixtures';
 import { renderAt } from '../../test/render';
 
 afterEach(cleanup);
@@ -70,6 +71,19 @@ describe('Tender page', () => {
     expect(await screen.findByText(/Biên bản mở thầu chưa được công bố/)).toBeTruthy();
     expect(screen.queryByRole('table', { name: 'Các nhà thầu tham gia' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Mở trang gốc' }).getAttribute('href')).toBe('https://muasamcong.mpi.gov.vn/example');
+  });
+
+  it('never renders a source link outside the official system, even if one slips through (review P2-6)', async () => {
+    const evil = { ...tenderUnknownBids, source_url: 'javascript:alert(1)' };
+    renderAt('/tender/SMP-2026-00004', fakeDataSource({ tender: async () => evil, meta: async () => ({ ...meta, is_sample: false }) }));
+    expect(await screen.findByText('Chưa có đường dẫn tới trang gốc.')).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Mở trang gốc' })).toBeNull();
+  });
+
+  it('copes with an unknown first year for the buyer (review P2-3)', async () => {
+    const t = { ...tender, context: { ...tender.context, buyer_since: null } };
+    renderAt('/tender/SMP-2026-00001', fakeDataSource({ tender: async () => t }));
+    expect(await screen.findByText('142 gói thầu')).toBeTruthy();
   });
 
   it('shows not found for an unknown tender', async () => {

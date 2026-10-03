@@ -79,6 +79,12 @@ describe('Topic page', () => {
     expect((await screen.findByRole('link', { name: /Xây dựng trường học/ })).getAttribute('href')).toBe('/topic/schools');
   });
 
+  it('does not resolve object prototype keys as topic names', async () => {
+    renderAt('/topic/constructor');
+    expect(await screen.findByText('Không tìm thấy trang hoặc dữ liệu này.')).toBeTruthy();
+    expect(document.title).not.toContain('Object');
+  });
+
   it('shows not found for an unknown topic', async () => {
     renderAt('/topic/nope');
     expect(await screen.findByText('Không tìm thấy trang hoặc dữ liệu này.')).toBeTruthy();

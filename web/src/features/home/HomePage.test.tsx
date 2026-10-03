@@ -43,6 +43,12 @@ describe('Home page', () => {
     expect(document.querySelector('script')).toBeNull();
   });
 
+  it('does not download the full tender index (review P2-4)', async () => {
+    renderAt('/', fakeDataSource({ tenders: async () => { throw new Error('home must not load tenders.json'); } }));
+    const latest = await screen.findByRole('region', { name: 'Kết quả trúng thầu mới nhất' });
+    expect(within(latest).getByRole('link', { name: /12 phòng học/ })).toBeTruthy();
+  });
+
   it('sends the search to the tender list', async () => {
     const { location } = renderAt('/');
     fireEvent.input(await screen.findByLabelText(/Tìm gói thầu/), { target: { value: 'phòng học' } });

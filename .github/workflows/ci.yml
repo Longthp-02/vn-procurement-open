@@ -14,7 +14,8 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Never cancel a run on main: it may be mid-deploy to production.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   pipeline:
@@ -89,6 +90,7 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       PROJECT: ${{ vars.CF_PAGES_PROJECT || 'minhbachdauthau' }}
       BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || 'main' }}
+      WRANGLER_VERSION: 4.147.0  # pinned; bump deliberately
     steps:
       - name: Check deploy credentials
         run: |
@@ -113,12 +115,12 @@ jobs:
         run: npm ci && npm run build
       - name: Create Pages project if it does not exist
         run: |
-          npx --yes wrangler@4 pages project list | grep -qw "$PROJECT" \
-            || npx --yes wrangler@4 pages project create "$PROJECT" --production-branch=main
+          npx --yes wrangler@${WRANGLER_VERSION} pages project list | grep -qw "$PROJECT" \
+            || npx --yes wrangler@${WRANGLER_VERSION} pages project create "$PROJECT" --production-branch=main
       - name: Deploy
         id: deploy
         run: |
-          npx --yes wrangler@4 pages deploy web/dist --project-name="$PROJECT" --branch="$BRANCH" --commit-dirty=true | tee deploy.log
+          npx --yes wrangler@${WRANGLER_VERSION} pages deploy web/dist --project-name="$PROJECT" --branch="$BRANCH" --commit-dirty=true | tee deploy.log
           url=$(grep -oE 'https://[a-zA-Z0-9.-]+\.pages\.dev' deploy.log | tail -1)
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "### Deployed: $url" >> "$GITHUB_STEP_SUMMARY"

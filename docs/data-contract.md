@@ -35,8 +35,8 @@ One JSON object per line, one line per tender package.
 
 ## Indicators
 
-Computed only in `pipeline/build_site_data.py` so the logic is tested in one place.
-Every indicator ignores tenders where its inputs are missing and reports how many tenders it used.
+Defined only in `pipeline/metrics.py` (pure, unit-tested) and applied by `pipeline/build_site_data.py`. **Status: proposed, TODO: verify by owner.**
+Every indicator ignores tenders where its inputs are missing and returns `{value, n}`, where `n` is the number of tenders it used.
 
 | Indicator | Definition |
 |---|---|
@@ -45,5 +45,31 @@ Every indicator ignores tenders where its inputs are missing and reports how man
 | Savings vs estimate | `(estimate − award) ÷ estimate`, averaged over awarded tenders with both values. |
 | Processing time | Days from `dates.notice` to `dates.award`. Median. |
 | Disclosure | Published documents ÷ 7 per tender; averaged for groups. Per document type for buyers. |
-| Top-5 concentration | Share of total award value won by the 5 largest contractors in the group. |
+| Top-5 concentration | Share of total award value won by the 5 largest contractors in the group (`n` = awarded tenders with a known winner). |
 | Unit cost | `award ÷ units.count` for tenders with a parsed unit count. Median per province. |
+
+## Input validation in `build_site_data.py`
+
+- Tender, buyer and contractor ids must match `^[A-Za-z0-9_-]+$` (they become file names and URL segments). The build stops with an error naming the record otherwise.
+- `source_url` is kept only if it is `https://` on `muasamcong.mpi.gov.vn` or `muasamcong.mof.gov.vn`; anything else becomes `null` and the build prints a warning with the count.
+- Any date may be null; indicators and "since" years skip missing dates.
+- CSV downloads prefix cells starting with `= + - @` with `'` so spreadsheets do not run them as formulas.
+
+## Site files (output of `build_site_data.py`)
+
+The web reads only these files, through the `DataSource` port (`web/src/lib/data.ts`); TypeScript shapes are in `web/src/lib/types.ts`.
+Every group indicator below is `{value, n}`.
+
+| File | Shape | Used by |
+|---|---|---|
+| `meta.json` | build info (`generated_at`, `collected_at`, `is_sample`, `source`, `years`, `counts`), `national` group indicators, `sectors.<sector>` baselines (`avg_bidders`, `avg_savings`, `median_days`) | all pages |
+| `provinces.json` | `[{id, name, …group indicators}]`, sorted by award value | home, filters |
+| `topics.json` | `[{id, …group indicators}]` | home, topic pages |
+| `latest.json` | up to 5 index rows (same shape as `tenders.json`), awarded only, newest first | home |
+| `tenders.json` | index rows: `id, title, province, sector, method, topics, status, buyer, buyer_name, winner, winner_name, winner_tax, estimate, award, bidders, date, docs` | search/list |
+| `buyers.json`, `contractors.json` | list rows for the list pages | lists |
+| `tender/<id>.json` | the normalized tender plus `derived {bidders, savings, days, disclosure}` and `context {sector, buyer_tenders, buyer_since (nullable), winner_wins_with_buyer}` | tender page |
+| `buyer/<id>.json` | buyer, `since` (nullable), group indicators, `documents.<doc>` disclosure, `top_contractors`, `recent` | buyer page |
+| `contractor/<id>.json` | contractor, `bids`, `wins`, `award_value_vnd`, `buyers`, `provinces`, `by_year`, `top_buyers`, `recent_wins` | contractor page |
+| `topic/<id>.json` | topic indicators, `unit`, `unit_cost[{province, name, value, n}]`, `largest` | topic page |
+| `download/tenders.{jsonl,csv}` | open-data downloads | home |

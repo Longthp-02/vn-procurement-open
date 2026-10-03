@@ -1,4 +1,5 @@
 // Number and date formatting for Vietnamese readers. Unknown values render as a dash, never as zero.
+import { vi } from '../i18n/vi';
 
 export const DASH = '—';
 const MINUS = '−'; // U+2212, typographically correct minus sign
@@ -20,9 +21,9 @@ function known(v: number | null | undefined): v is number {
 export function formatVnd(value: number | null | undefined): string {
   if (!known(value)) return DASH;
   const abs = Math.abs(value);
-  if (abs >= 1e9) return `${num(value / 1e9, 2)} tỷ`;
-  if (abs >= 1e6) return `${num(value / 1e6, 1)} triệu`;
-  return `${num(value, 0)} đồng`;
+  if (abs >= 1e9) return `${num(value / 1e9, 2)} ${vi.units.billion}`;
+  if (abs >= 1e6) return `${num(value / 1e6, 1)} ${vi.units.million}`;
+  return `${num(value, 0)} ${vi.units.dong}`;
 }
 
 export function formatPercent(ratio: number | null | undefined, opts: { signed?: boolean } = {}): string {
@@ -44,5 +45,5 @@ export function formatDate(iso: string | null | undefined): string {
 }
 
 export function formatDays(days: number | null | undefined): string {
-  return known(days) ? `${num(days, 0)} ngày` : DASH;
+  return known(days) ? `${num(days, 0)} ${vi.units.days}` : DASH;
 }

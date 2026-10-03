@@ -9,6 +9,7 @@ Output layout (all paths relative to --out):
   provinces.json             one row per province
   topics.json                one row per topic
   tenders.json               compact index of every tender (search and lists)
+  latest.json                the most recent awarded tenders (home page; avoids loading the full index)
   tender/<id>.json           full tender record plus context
   contractor/<id>.json       contractor profile
   buyer/<id>.json            procuring-entity profile
@@ -19,16 +20,53 @@ Output layout (all paths relative to --out):
 import argparse
 import csv
 import json
+import re
 import shutil
 import sys
 from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
+from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import metrics as m  # noqa: E402
 
 TOPIC_UNITS = {"schools": "classroom"}
+LATEST_COUNT = 5
+
+# Ids become file names and URL segments, and come from crawled data: allow only what our ids use.
+SAFE_ID = re.compile(r"^[A-Za-z0-9_-]+$")
+# Source links are rendered as <a href>; only the official system over HTTPS is allowed.
+SOURCE_HOSTS = {"muasamcong.mpi.gov.vn", "muasamcong.mof.gov.vn"}
+# A leading = + - @ (or tab/CR) makes spreadsheet apps evaluate a cell as a formula.
+FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def check_ids(t):
+    ids = [t.get("id"), t["buyer"].get("id")] + [b["contractor"].get("id") for b in t.get("bids") or []]
+    for value in ids:
+        if not isinstance(value, str) or not SAFE_ID.match(value):
+            raise ValueError(f"unsafe id {value!r} in tender {t.get('id')!r}: ids must match {SAFE_ID.pattern}")
+
+
+def safe_source_url(url):
+    if not url:
+        return None
+    parsed = urlparse(url)
+    return url if parsed.scheme == "https" and parsed.hostname in SOURCE_HOSTS else None
+
+
+def csv_safe(value):
+    return f"'{value}" if isinstance(value, str) and value.startswith(FORMULA_PREFIXES) else value
+
+
+def year_of(iso):
+    return iso[:4] if iso else None
+
+
+def earliest_year(ts, key="notice"):
+    years = [t["dates"].get(key) for t in ts if t["dates"].get(key)]
+    return min(years)[:4] if years else None
 
 
 def load(path):
@@ -78,7 +116,7 @@ def index_row(t):
 def by_year(ts):
     out = defaultdict(int)
     for t in ts:
-        if m.is_awarded(t):
+        if m.is_awarded(t) and t["dates"].get("award"):
             out[t["dates"]["award"][:4]] += t["award_vnd"]
     return [{"year": y, "value_vnd": v} for y, v in sorted(out.items())]
 
@@ -118,6 +156,16 @@ def main():
     args = ap.parse_args()
 
     tenders = load(args.input)
+    for t in tenders:
+        check_ids(t)  # before writing anything
+    dropped_urls = 0
+    for t in tenders:
+        safe = safe_source_url(t.get("source_url"))
+        if t.get("source_url") and safe is None:
+            dropped_urls += 1
+        t["source_url"] = safe
+    if dropped_urls:
+        print(f"WARNING: dropped {dropped_urls} source_url values not on {sorted(SOURCE_HOSTS)} over https", file=sys.stderr)
     out = Path(args.out)
     if out.exists():
         shutil.rmtree(out)
@@ -144,7 +192,7 @@ def main():
     national = group_indicators(tenders)
     sector_base = {s: {"avg_bidders": m.avg_bidders(ts), "avg_savings": m.avg_savings(ts),
                        "median_days": m.median_processing_days(ts)} for s, ts in by_sector.items()}
-    years = sorted({(t["dates"].get("award") or t["dates"]["notice"])[:4] for t in tenders})
+    years = sorted({y for t in tenders if (y := year_of(t["dates"].get("award") or t["dates"].get("notice")))})
 
     write(out / "meta.json", {
         "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -176,7 +224,9 @@ def main():
     topics.sort(key=lambda r: -r["award_value_vnd"])
     write(out / "topics.json", topics)
 
-    write(out / "tenders.json", [index_row(t) for t in sorted(tenders, key=lambda t: last_date(t) or "", reverse=True)])
+    index = [index_row(t) for t in sorted(tenders, key=lambda t: last_date(t) or "", reverse=True)]
+    write(out / "tenders.json", index)
+    write(out / "latest.json", [r for r in index if r["status"] == "awarded"][:LATEST_COUNT])
 
     for t in tenders:
         w = m.winner(t)
@@ -188,7 +238,7 @@ def main():
             "context": {
                 "sector": sector_base[t["sector"]],
                 "buyer_tenders": len(b_ts),
-                "buyer_since": min(x["dates"]["notice"] for x in b_ts)[:4],
+                "buyer_since": earliest_year(b_ts),
                 "winner_wins_with_buyer": sum(1 for x in b_ts if (m.winner(x) or {}).get("id") == (w or {}).get("id")) if w else None,
             },
         })
@@ -196,7 +246,7 @@ def main():
     for bid, ts in by_buyer.items():
         b = names["buyer"][bid]
         write(out / "buyer" / f"{bid}.json", {
-            **b, "province": ts[0]["province"], "since": min(t["dates"]["notice"] for t in ts)[:4],
+            **b, "province": ts[0]["province"], "since": earliest_year(ts),
             **group_indicators(ts),
             "documents": m.disclosure_by_document(ts),
             "top_contractors": share_rank(ts, lambda t: (m.winner(t) or {}).get("id"), lambda t: (m.winner(t) or {}).get("name")),
@@ -235,7 +285,7 @@ def main():
     with open(dl / "tenders.csv", "w", newline="", encoding="utf-8-sig") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
         w.writeheader()
-        w.writerows({**r, "topics": "|".join(r["topics"])} for r in rows)
+        w.writerows({k: csv_safe(v) for k, v in {**r, "topics": "|".join(r["topics"])}.items()} for r in rows)
 
     print(f"Built site data for {len(tenders)} tenders, {len(by_buyer)} buyers, "
           f"{len(names['contractor'])} contractors -> {out}")

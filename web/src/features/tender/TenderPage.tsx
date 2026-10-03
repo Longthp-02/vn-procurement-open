@@ -1,6 +1,6 @@
 import { Link } from 'wouter-preact';
 import { vi } from '../../i18n/vi';
-import { reportIssueUrl } from '../../lib/config';
+import { officialSourceUrl, reportIssueUrl } from '../../lib/config';
 import { formatCount, formatDate, formatDays, formatPercent, formatVnd } from '../../lib/format';
 import { Loaded, Section } from '../../lib/ui';
 import { useData, useTitle } from '../../lib/useData';
@@ -9,16 +9,17 @@ import { DOC_KEYS, type Tender } from '../../lib/types';
 const t = vi.tender;
 
 export function TenderPage({ id }: { id: string }) {
-  const result = useData((ds) => ds.tender(id), `tender:${id}`);
-  useTitle(result.state === 'ok' ? `${result.data.title} · ${vi.site.name}` : null);
+  const result = useData((ds) => Promise.all([ds.tender(id), ds.meta()]), `tender:${id}`);
+  useTitle(result.state === 'ok' ? `${result.data[0].title} · ${vi.site.name}` : null);
   return (
     <div class="container page">
-      <Loaded result={result}>{(tender) => <TenderView tender={tender} />}</Loaded>
+      <Loaded result={result}>{([tender, meta]) => <TenderView tender={tender} isSample={meta.is_sample} />}</Loaded>
     </div>
   );
 }
 
-function TenderView({ tender }: { tender: Tender }) {
+function TenderView({ tender, isSample }: { tender: Tender; isSample: boolean }) {
+  const sourceUrl = officialSourceUrl(tender.source_url);
   const winner = tender.bids?.find((b) => b.won)?.contractor ?? null;
   const published = DOC_KEYS.filter((k) => tender.documents[k]).length;
   const savings = tender.derived.savings;
@@ -143,12 +144,12 @@ function TenderView({ tender }: { tender: Tender }) {
             <span class="strong">{t.sourceTitle}</span>
             <span>{t.notice(tender.id)}</span>
             <span>{t.collected(formatDate(tender.collected_at))}</span>
-            {tender.source_url ? (
-              <a href={tender.source_url} target="_blank" rel="noopener noreferrer" class="strong">
+            {sourceUrl ? (
+              <a href={sourceUrl} target="_blank" rel="noopener noreferrer" class="strong">
                 {t.sourceOpen}
               </a>
             ) : (
-              <span class="muted">{t.sourceSample}</span>
+              <span class="muted">{isSample ? t.sourceSample : t.sourceMissing}</span>
             )}
             <a href={reportIssueUrl(tender.id)} target="_blank" rel="noopener noreferrer">
               {vi.site.reportError}

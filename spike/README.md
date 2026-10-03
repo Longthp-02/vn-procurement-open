@@ -4,6 +4,8 @@ Goal: within 1–2 days, answer one question: **is the public procurement data c
 
 ## Setup
 
+Requires **Python 3.10+** (macOS's built-in `python3` is often 3.7: `brew install python@3.12` and use `python3.12 -m venv .venv`).
+
 ```bash
 pip install -r spike/requirements.txt
 python -m playwright install chromium

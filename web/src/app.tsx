@@ -30,7 +30,7 @@ function Shell() {
   return (
     <div class="shell">
       <a class="skip" href="#main">
-        Bỏ qua điều hướng
+        {vi.site.skipNav}
       </a>
       <SampleBanner />
       <Header />
@@ -78,7 +78,7 @@ function Header() {
           </svg>
           <span>{vi.site.name}</span>
         </Link>
-        <nav aria-label="Chính" class="nav">
+        <nav aria-label={vi.site.mainNav} class="nav">
           <Link href="/tenders">{vi.nav.tenders}</Link>
           <Link href="/contractors">{vi.nav.contractors}</Link>
           <Link href="/buyers">{vi.nav.buyers}</Link>

@@ -73,5 +73,41 @@
     "implementation": "web/src/features/topic/TopicPage.tsx",
     "cwd": "web",
     "test": "npx vitest run src/features/entities/EntityPages.test.tsx"
+  },
+  {
+    "name": "web-ui",
+    "implementation": "web/src/lib/ui.tsx",
+    "cwd": "web",
+    "test": "npx vitest run src/features/tenders/TendersPage.test.tsx"
+  },
+  {
+    "name": "web-use-data",
+    "implementation": "web/src/lib/useData.ts",
+    "cwd": "web",
+    "test": "npx vitest run src/features/home/HomePage.test.tsx"
+  },
+  {
+    "name": "web-config",
+    "implementation": "web/src/lib/config.ts",
+    "cwd": "web",
+    "test": "npx vitest run src/features/tender/TenderPage.test.tsx"
+  },
+  {
+    "name": "web-topics",
+    "implementation": "web/src/lib/topics.ts",
+    "cwd": "web",
+    "test": "npx vitest run src/features/entities/EntityPages.test.tsx"
+  },
+  {
+    "name": "web-lists",
+    "implementation": "web/src/features/entities/ListPages.tsx",
+    "cwd": "web",
+    "test": "npx vitest run src/features/entities/EntityPages.test.tsx"
+  },
+  {
+    "name": "web-methodology",
+    "implementation": "web/src/features/methodology/MethodologyPage.tsx",
+    "cwd": "web",
+    "test": "npx vitest run src/app.test.tsx"
   }
 ]

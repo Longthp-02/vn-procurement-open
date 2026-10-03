@@ -8,9 +8,14 @@ export const vi = {
     independent: 'Dự án độc lập, không liên kết với cơ quan nhà nước. Dữ liệu gốc thuộc Hệ thống mạng đấu thầu quốc gia.',
     reportError: 'Báo sai dữ liệu',
     sourceCode: 'Mã nguồn trên GitHub',
+    skipNav: 'Bỏ qua điều hướng',
+    mainNav: 'Chính',
+    issueTitle: (context: string) => `Sai dữ liệu: ${context}`,
     updated: 'Cập nhật dữ liệu',
     source: 'Nguồn',
   },
+  units: { billion: 'tỷ', million: 'triệu', dong: 'đồng', days: 'ngày' },
+  packages: (n: string) => `${n} gói`,
   nav: {
     tenders: 'Gói thầu',
     contractors: 'Nhà thầu',
@@ -71,6 +76,8 @@ export const vi = {
     priceToAward: 'Giá gói → Giá trúng',
     bidders: 'Nhà thầu tham gia',
     notAwarded: 'Chưa có kết quả',
+    winnerUnknown: 'Đã có kết quả, chưa rõ nhà thầu trúng',
+    cancelled: 'Gói thầu đã bị hủy',
   },
   list: {
     title: 'Gói thầu',
@@ -88,6 +95,7 @@ export const vi = {
   method: {
     open: 'Đấu thầu rộng rãi', limited: 'Đấu thầu hạn chế', direct: 'Chỉ định thầu', quotation: 'Chào hàng cạnh tranh', other: 'Hình thức khác',
   } as Record<string, string>,
+  // Look topics up with topicInfo() (src/lib/topics.ts), never vi.topic[id]: ids come from URLs.
   topic: {
     schools: { name: 'Xây dựng trường học', desc: 'Các gói xây mới và cải tạo trường học các cấp.' },
     'medical-equipment': { name: 'Thiết bị y tế', desc: 'Mua sắm máy móc, vật tư cho bệnh viện và trung tâm y tế.' },
@@ -112,7 +120,7 @@ export const vi = {
     thisTender: 'Gói này',
     sectorAvg: 'Trung bình cùng lĩnh vực',
     indBidders: 'Số nhà thầu tham gia',
-    indBiddersWhy: 'Nhiều nhà thầu cạnh tranh thường giúp giá tốt hơn cho ngân sách.',
+    indBiddersWhy: 'Số nhà thầu có tên trong biên bản mở thầu.',
     indSavings: 'Tiết kiệm so với giá gói',
     indSavingsWhy: 'Chênh lệch giữa giá gói được duyệt và giá trúng thầu.',
     indDays: 'Số ngày từ mời thầu đến kết quả',
@@ -132,7 +140,7 @@ export const vi = {
     timelineTitle: 'Tiến trình',
     timeline: { plan: 'Kế hoạch', notice: 'Mời thầu', opening: 'Mở thầu', award: 'Kết quả' } as Record<string, string>,
     buyerBox: 'Bên mời thầu',
-    buyerStats: (n: number, since: string) => `${n} gói thầu từ ${since}`,
+    buyerStats: (n: number, since: string | null) => (since ? `${n} gói thầu từ ${since}` : `${n} gói thầu`),
     buyerLink: 'Xem hồ sơ bên mời thầu',
     winnerBox: 'Nhà thầu trúng',
     winnerStats: (n: number) => `Đã trúng ${n} gói của bên mời thầu này`,
@@ -140,6 +148,7 @@ export const vi = {
     sourceTitle: 'Nguồn dữ liệu',
     sourceOpen: 'Mở trang gốc',
     sourceSample: 'Dữ liệu mẫu: không có trang gốc.',
+    sourceMissing: 'Chưa có đường dẫn tới trang gốc.',
     collected: (d: string) => `Thu thập: ${d}`,
     notice: (id: string) => `Mã thông báo mời thầu: ${id}`,
   },
@@ -161,7 +170,7 @@ export const vi = {
   },
   buyer: {
     title: 'Bên mời thầu',
-    since: (y: string) => `Có dữ liệu từ ${y}`,
+    since: (y: string | null) => (y ? `Có dữ liệu từ ${y}` : ''),
     tenders: 'Số gói đã mời thầu',
     value: 'Tổng giá trị trúng thầu',
     single: 'Gói chỉ có 1 nhà thầu',

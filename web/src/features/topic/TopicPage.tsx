@@ -1,6 +1,7 @@
 import { Link } from 'wouter-preact';
 import { vi } from '../../i18n/vi';
 import { formatCount, formatPercent, formatVnd } from '../../lib/format';
+import { topicInfo } from '../../lib/topics';
 import { Bar, Loaded, Section, Stat, TenderTable } from '../../lib/ui';
 import { useData, useTitle } from '../../lib/useData';
 import type { Topic, TopicRow } from '../../lib/types';
@@ -8,7 +9,7 @@ import type { Topic, TopicRow } from '../../lib/types';
 const t = vi.topicPage;
 
 export function TopicPage({ id }: { id: string }) {
-  const name = vi.topic[id]?.name ?? id;
+  const { name, desc } = topicInfo(id);
   useTitle(`${name} · ${vi.site.name}`);
   const result = useData((ds) => Promise.all([ds.topic(id), ds.topics(), ds.meta()]), `topic:${id}`);
   return (
@@ -21,7 +22,7 @@ export function TopicPage({ id }: { id: string }) {
                 <Link href="/topics">{vi.nav.topics}</Link> / {name}
               </nav>
               <h1>{name}</h1>
-              <p class="hero-lead">{vi.topic[id]?.desc}</p>
+              <p class="hero-lead">{desc}</p>
               <TopicTabs all={all} current={id} />
             </div>
           </section>
@@ -39,7 +40,7 @@ function TopicTabs({ all, current }: { all: TopicRow[]; current: string }) {
     <nav class="row-wrap" aria-label={t.allTopics}>
       {all.map((tp) => (
         <Link key={tp.id} href={`/topic/${tp.id}`} class={`pill ${tp.id === current ? 'pill-active' : ''}`} aria-current={tp.id === current ? 'page' : undefined}>
-          {vi.topic[tp.id]?.name ?? tp.id}
+          {topicInfo(tp.id).name}
         </Link>
       ))}
     </nav>
@@ -93,10 +94,10 @@ export function TopicsPage() {
           <div class="grid-cards">
             {all.map((tp) => (
               <Link key={tp.id} href={`/topic/${tp.id}`} class="card topic-card">
-                <span class="topic-name">{vi.topic[tp.id]?.name ?? tp.id}</span>
-                <span class="muted small">{vi.topic[tp.id]?.desc}</span>
+                <span class="topic-name">{topicInfo(tp.id).name}</span>
+                <span class="muted small">{topicInfo(tp.id).desc}</span>
                 <span class="num muted small">
-                  {formatCount(tp.tenders)} gói · {formatVnd(tp.award_value_vnd)}
+                  {vi.packages(formatCount(tp.tenders))} · {formatVnd(tp.award_value_vnd)}
                 </span>
               </Link>
             ))}

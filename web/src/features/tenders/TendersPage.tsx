@@ -27,10 +27,10 @@ function Results({ rows, provinces, params }: { rows: TenderRow[]; provinces: Pr
   const q = params.get('q') ?? '';
   const province = params.get('province') ?? '';
   const status = (params.get('status') ?? '') as Status | '';
-  const page = Math.max(1, Number(params.get('page')) || 1);
 
   const matches = filterTenders(rows, { q, province, status });
   const pages = Math.max(1, Math.ceil(matches.length / PAGE_SIZE));
+  const page = Math.min(pages, Math.max(1, Number(params.get('page')) || 1));
   const shown = matches.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const go = (over: Record<string, string>) => {
