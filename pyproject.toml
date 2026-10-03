@@ -1,0 +1,17 @@
+[tool.pytest.ini_options]
+testpaths = ["pipeline/tests"]
+
+[tool.coverage.run]
+source = ["pipeline"]
+omit = ["pipeline/tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.ruff]
+line-length = 140
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E702"]

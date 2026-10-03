@@ -5,7 +5,7 @@ Goal: within 1–2 days, answer one question: **is the public procurement data c
 ## Setup
 
 ```bash
-pip install -r requirements.txt
+pip install -r spike/requirements.txt
 python -m playwright install chromium
 ```
 

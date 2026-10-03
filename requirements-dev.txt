@@ -1,0 +1,4 @@
+# Pipeline dev tools (runtime is stdlib-only).
+pytest>=8.3
+pytest-cov>=5.0   # coverage reporting in CI (owner requirement)
+ruff>=0.6         # lint + import sorting, single fast tool

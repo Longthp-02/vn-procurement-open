@@ -1,0 +1,77 @@
+[
+  {
+    "name": "pipeline-metrics",
+    "implementation": "pipeline/metrics.py",
+    "test": "python -m pytest -q -p no:cacheprovider pipeline/tests/test_metrics.py"
+  },
+  {
+    "name": "pipeline-build",
+    "implementation": "pipeline/build_site_data.py",
+    "test": "python -m pytest -q -p no:cacheprovider pipeline/tests/test_build_site_data.py"
+  },
+  {
+    "name": "pipeline-sample",
+    "implementation": "pipeline/make_sample.py",
+    "test": "python -m pytest -q -p no:cacheprovider pipeline/tests/test_make_sample.py"
+  },
+  {
+    "name": "web-format",
+    "implementation": "web/src/lib/format.ts",
+    "cwd": "web",
+    "test": "npx vitest run src/lib/format.test.ts"
+  },
+  {
+    "name": "web-search",
+    "implementation": "web/src/lib/search.ts",
+    "cwd": "web",
+    "test": "npx vitest run src/lib/search.test.ts"
+  },
+  {
+    "name": "web-data",
+    "implementation": "web/src/lib/data.ts",
+    "cwd": "web",
+    "test": "npx vitest run src/lib/data.test.ts"
+  },
+  {
+    "name": "web-app-shell",
+    "implementation": "web/src/app.tsx",
+    "cwd": "web",
+    "test": "npx vitest run src/app.test.tsx"
+  },
+  {
+    "name": "web-home",
+    "implementation": "web/src/features/home/HomePage.tsx",
+    "cwd": "web",
+    "test": "npx vitest run src/features/home/HomePage.test.tsx"
+  },
+  {
+    "name": "web-tenders",
+    "implementation": "web/src/features/tenders/TendersPage.tsx",
+    "cwd": "web",
+    "test": "npx vitest run src/features/tenders/TendersPage.test.tsx"
+  },
+  {
+    "name": "web-tender",
+    "implementation": "web/src/features/tender/TenderPage.tsx",
+    "cwd": "web",
+    "test": "npx vitest run src/features/tender/TenderPage.test.tsx"
+  },
+  {
+    "name": "web-contractor",
+    "implementation": "web/src/features/entities/ContractorPage.tsx",
+    "cwd": "web",
+    "test": "npx vitest run src/features/entities/EntityPages.test.tsx"
+  },
+  {
+    "name": "web-buyer",
+    "implementation": "web/src/features/entities/BuyerPage.tsx",
+    "cwd": "web",
+    "test": "npx vitest run src/features/entities/EntityPages.test.tsx"
+  },
+  {
+    "name": "web-topic",
+    "implementation": "web/src/features/topic/TopicPage.tsx",
+    "cwd": "web",
+    "test": "npx vitest run src/features/entities/EntityPages.test.tsx"
+  }
+]

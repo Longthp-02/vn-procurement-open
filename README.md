@@ -24,37 +24,43 @@ Vietnam's public procurement data is already published on the National E-Procure
 ## Architecture (static-first, zero cost)
 
 ```
-GitHub Actions (scheduled crawler)
-        │  clean + link
-        ▼
-Parquet / SQLite files ──► Cloudflare R2 (public, downloadable dataset)
-                                   │
-                                   ▼
-             Static site on Cloudflare Pages
-             (queries run in the browser with DuckDB-WASM)
+crawler / sample generator ──► tenders.jsonl ──► pipeline/build_site_data.py ──► JSON files
+                                                                                    │
+                                          Static site (Vite + Preact) on Cloudflare Pages
 ```
 
-No always-on server or database. Data is refreshed daily, so a static site plus files is enough, and the dataset is open by design. If muasamcong blocks foreign IPs, the crawler moves to a small VPS in Vietnam while everything else stays on Cloudflare.
+No always-on server or database. Data is refreshed daily, so prebuilt JSON is enough, and the dataset is open by design (CSV/JSONL downloads). Nationwide scale will move to sharded files or Parquet queried in the browser. If muasamcong blocks foreign IPs, the crawler moves to a small VPS in Vietnam. Details: [`docs/architecture.md`](docs/architecture.md), [`docs/data-contract.md`](docs/data-contract.md).
+
+The site currently runs on **clearly labeled sample data** until the crawler exists.
 
 ## Roadmap
 
 | Phase | Scope | Status |
 |---|---|---|
 | 0 | Spike: API discovery and data completeness ([`spike/`](spike/)) | 🟡 In progress |
+| 0.5 | Web MVP on sample data, tested pipeline, CI/CD | ✅ Done |
 | 1 | Ho Chi Minh City tenders: crawler, normalization, search page, contractor pages | ⏳ |
 | 2 | Nationwide coverage, cross-province indicators | ⏳ |
 | 3 | Budget data for 3–5 provinces, PDF extraction with LLMs | ⏳ |
 | 4 | Public API, analysis write-ups | ⏳ |
 
-## Getting started
+## Development
 
 ```bash
-pip install -r requirements.txt
-python -m playwright install chromium
-python spike/muasamcong_spike.py capture
+pip install -r requirements-dev.txt
+python pipeline/make_sample.py && python pipeline/build_site_data.py --sample   # sample data
+cd web && npm ci && npm run dev                                                  # http://localhost:5173
 ```
 
-See [`spike/README.md`](spike/README.md) for details.
+Checks (all run in CI on every pull request):
+
+```bash
+ruff check pipeline spike scripts && python -m pytest --cov=pipeline
+cd web && npm run typecheck && npm run coverage && npm run build
+python scripts/prove_red_green.py      # every test suite fails without its implementation
+```
+
+Contributors and AI agents: start with [`AGENTS.md`](AGENTS.md). Data survey of the live source: [`spike/README.md`](spike/README.md).
 
 ## Data source
 

@@ -1,0 +1,13 @@
+---
+description: Core project rules for vn-procurement-open
+alwaysApply: true
+---
+
+Before any change, read and follow:
+
+- `AGENTS.md` (source of truth)
+- `CONSTITUTION.md` (non-negotiables)
+- `memory-bank/activeContext.md`
+- `memory-bank/progress.md`
+
+Do not invent domain rules; use `TODO: verify`. Choose the test strategy before coding. Keep diffs minimal.

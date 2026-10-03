@@ -37,14 +37,14 @@ def find_record_list(obj, path=()):
         if obj and all(isinstance(x, dict) for x in obj):
             best_path, best = path, obj
         for i, x in enumerate(obj[:1]):  # only probe the first element, for speed
-            p, l = find_record_list(x, path + (i,))
-            if l is not None and (best is None or len(l) > len(best)):
-                best_path, best = p, l
+            p, found = find_record_list(x, path + (i,))
+            if found is not None and (best is None or len(found) > len(best)):
+                best_path, best = p, found
     elif isinstance(obj, dict):
         for k, v in obj.items():
-            p, l = find_record_list(v, path + (k,))
-            if l is not None and (best is None or len(l) > len(best)):
-                best_path, best = p, l
+            p, found = find_record_list(v, path + (k,))
+            if found is not None and (best is None or len(found) > len(best)):
+                best_path, best = p, found
     return best_path, best
 
 
