@@ -1,0 +1,17 @@
+[
+  {
+    "name": "pipeline-metrics",
+    "implementation": "pipeline/metrics.py",
+    "test": "python -m pytest -q -p no:cacheprovider pipeline/tests/test_metrics.py"
+  },
+  {
+    "name": "pipeline-build",
+    "implementation": "pipeline/build_site_data.py",
+    "test": "python -m pytest -q -p no:cacheprovider pipeline/tests/test_build_site_data.py"
+  },
+  {
+    "name": "pipeline-sample",
+    "implementation": "pipeline/make_sample.py",
+    "test": "python -m pytest -q -p no:cacheprovider pipeline/tests/test_make_sample.py"
+  }
+]

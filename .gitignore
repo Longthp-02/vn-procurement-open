@@ -8,3 +8,17 @@ storage_state.json
 __pycache__/
 .venv/
 .env
+
+# Generated data (rebuilt in CI)
+data/
+web/public/data/
+
+# Web
+node_modules/
+web/dist/
+
+# Test artifacts
+.coverage
+coverage/
+.pytest_cache/
+.ruff_cache/
