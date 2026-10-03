@@ -20,8 +20,9 @@
 
 ## Completed Setup Work
 - 2026-10-03: repo created, spike, design canvas (5 screens), data contract, pipeline, foundation docs, CI
+- 2026-10-04: web MVP deployed to Cloudflare Pages (https://minhbachdauthau.pages.dev); PR previews at `<branch>.minhbachdauthau.pages.dev`
 
 ## Next Steps
-1. Owner adds Cloudflare secrets → first deploy
-2. Second-pass review of the web MVP PR
-3. Run spike → crawler plan
+1. Second-pass review of the web MVP
+2. Run spike → crawler plan
+3. Owner sign-off on indicator definitions
