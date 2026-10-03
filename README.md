@@ -2,6 +2,8 @@
 
 > Open, citizen-facing view of Vietnam's public procurement data: searchable, source-linked, and easy to verify.
 
+**Live (sample data):** https://minhbachdauthau.pages.dev
+
 ## Why
 
 Vietnam's public procurement data is already published on the National E-Procurement System (muasamcong.mpi.gov.vn), but it is hard to use: you search one tender at a time, cannot compare provinces, and cannot see a contractor's track record. Existing tools mostly serve contractors trying to win bids. This project serves **citizens, journalists and researchers**.

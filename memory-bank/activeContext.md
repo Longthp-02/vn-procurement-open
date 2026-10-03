@@ -3,7 +3,7 @@
 _Update after every meaningful AI session._
 
 ## Current Focus
-Web MVP on sample data is built and tested (PR `feat/web-mvp`); waiting for Cloudflare secrets to deploy.
+Web MVP on sample data is live at https://minhbachdauthau.pages.dev (PR #1 merged 2026-10-04). Next: real data via the spike → crawler.
 
 ## Latest Decisions (2026-10-03)
 - Static-first, zero-cost architecture (no server/database)
@@ -18,5 +18,5 @@ Web MVP on sample data is built and tested (PR `feat/web-mvp`); waiting for Clou
 - Spike results from the live site
 
 ## Next Safe Step
-1. Owner adds `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets → CI deploys.
+1. Second-pass review of PR #1 with a fresh agent (`.github/skills/second-pass-review/SKILL.md`).
 2. Owner runs the spike (`spike/README.md`) and shares `report/report.md`; then plan the crawler.
