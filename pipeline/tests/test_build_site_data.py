@@ -39,6 +39,10 @@ def built(tmp_path, monkeypatch):
         tender("T3", "hn", "B2", bids=None),  # bid opening minutes not published
         tender("T4", "hn", "B2", status="open", bids=[bid("c2", 800, False)]),
     ]
+    return build(tmp_path, monkeypatch, tenders)
+
+
+def build(tmp_path, monkeypatch, tenders):
     src = tmp_path / "tenders.jsonl"
     src.write_text("\n".join(json.dumps(t) for t in tenders), encoding="utf-8")
     out = tmp_path / "out"
@@ -110,3 +114,65 @@ def test_topic_unit_cost(built):
 def test_index_keeps_raw_text_for_the_client_to_escape(built):
     rows = read(built, "tenders.json")
     assert any("<script>" in r["title"] for r in rows)  # stored as data; the web must render it as text
+
+
+# --- Review findings (second-pass review of PR #1) -------------------------------------------
+
+def test_latest_lists_recent_awarded_tenders_only(built):
+    rows = read(built, "latest.json")
+    assert [r["id"] for r in rows] == ["T1", "T3", "T2"]  # awarded only, newest first; T4 is open
+    assert all(r["status"] == "awarded" for r in rows)
+
+
+def test_latest_is_capped(tmp_path, monkeypatch):
+    out = build(tmp_path, monkeypatch, [tender(f"T{i}", "hcm", "B1", award_date=f"2026-01-{i + 10:02d}") for i in range(12)])
+    assert len(read(out, "latest.json")) == 5
+
+
+@pytest.mark.parametrize("field", ["id", "buyer", "contractor"])
+def test_rejects_ids_that_could_escape_the_output_folder(tmp_path, monkeypatch, field):
+    t = tender("T1", "hcm", "B1", bids=[bid("c1", 900, True)])
+    if field == "id":
+        t["id"] = "../../escape"
+    elif field == "buyer":
+        t["buyer"]["id"] = "../escape"
+    else:
+        t["bids"][0]["contractor"]["id"] = "a/b"
+    with pytest.raises(ValueError, match="unsafe id"):
+        build(tmp_path, monkeypatch, [t])
+    assert not list(tmp_path.rglob("escape*"))
+
+
+def test_null_dates_allowed_by_the_contract_do_not_crash(tmp_path, monkeypatch):
+    no_notice = tender("T1", "hcm", "B1", notice=None, bids=[bid("c1", 900, True)])
+    no_award_date = tender("T2", "hcm", "B2", award_date=None, bids=[bid("c1", 900, True)])
+    no_award_date["dates"]["award"] = None
+    out = build(tmp_path, monkeypatch, [no_notice, no_award_date])
+    assert read(out, "buyer/B1.json")["since"] is None
+    assert read(out, "tender/T1.json")["context"]["buyer_since"] is None
+    assert read(out, "tender/T1.json")["derived"]["days"] is None
+    assert read(out, "contractor/c1.json")["by_year"] == [{"year": "2026", "value_vnd": 900}]  # T2 has no award date
+
+
+@pytest.mark.parametrize(("url", "kept"), [
+    ("https://muasamcong.mpi.gov.vn/web/guest/contractor-selection?id=1", True),
+    ("https://muasamcong.mof.gov.vn/x", True),
+    ("javascript:alert(1)", False),
+    ("http://muasamcong.mpi.gov.vn/x", False),
+    ("https://muasamcong.mpi.gov.vn.evil.com/x", False),
+    ("https://evil.com/?muasamcong.mpi.gov.vn", False),
+])
+def test_source_url_is_limited_to_the_official_system(tmp_path, monkeypatch, url, kept):
+    t = tender("T1", "hcm", "B1")
+    t["source_url"] = url
+    out = build(tmp_path, monkeypatch, [t])
+    assert read(out, "tender/T1.json")["source_url"] == (url if kept else None)
+
+
+def test_csv_neutralizes_spreadsheet_formulas(tmp_path, monkeypatch):
+    t = tender("T1", "hcm", "B1")
+    t["title"] = '=HYPERLINK("http://evil","x")'
+    out = build(tmp_path, monkeypatch, [t])
+    csv_text = (out / "download" / "tenders.csv").read_text(encoding="utf-8-sig")
+    assert "'=HYPERLINK" in csv_text
+    assert ',=HYPERLINK' not in csv_text

@@ -8,6 +8,8 @@ export interface DataSource {
   provinces(): Promise<ProvinceRow[]>;
   topics(): Promise<TopicRow[]>;
   tenders(): Promise<TenderRow[]>;
+  /** The most recent awarded tenders; small, for the home page. */
+  latest(): Promise<TenderRow[]>;
   buyers(): Promise<BuyerRow[]>;
   contractors(): Promise<ContractorRow[]>;
   tender(id: string): Promise<Tender>;
@@ -44,7 +46,9 @@ export function createStaticDataSource(base: string, fetchFn: FetchFn = (u) => f
       } catch (e) {
         throw new DataError('network', `Could not load ${path}: ${(e as Error).message}`);
       }
-      if (res.status === 404) throw new DataError('not_found', `${path} does not exist`);
+      // Static hosts (Cloudflare Pages, vite preview) answer missing files with the SPA's index.html and HTTP 200.
+      const html = (res.headers.get('content-type') ?? '').includes('text/html');
+      if (res.status === 404 || (res.ok && html)) throw new DataError('not_found', `${path} does not exist`);
       if (!res.ok) throw new DataError('network', `${path} returned HTTP ${res.status}`);
       try {
         return (await res.json()) as T;
@@ -67,6 +71,7 @@ export function createStaticDataSource(base: string, fetchFn: FetchFn = (u) => f
     provinces: () => load('provinces.json'),
     topics: () => load('topics.json'),
     tenders: () => load('tenders.json'),
+    latest: () => load('latest.json'),
     buyers: () => load('buyers.json'),
     contractors: () => load('contractors.json'),
     tender: (id) => entity('tender', id),

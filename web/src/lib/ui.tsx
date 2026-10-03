@@ -83,13 +83,7 @@ export function TenderCard({ row }: { row: TenderRow }) {
         <div class="muted small">
           {row.buyer_name} · {formatDate(row.date)}
         </div>
-        {row.winner_name ? (
-          <div class="small">
-            {vi.tenderCard.winner}: <strong>{row.winner_name}</strong>
-          </div>
-        ) : (
-          <div class="small muted">{vi.tenderCard.notAwarded}</div>
-        )}
+        <ResultLine row={row} />
       </div>
       <div class="tender-card-nums">
         <div>
@@ -105,6 +99,20 @@ export function TenderCard({ row }: { row: TenderRow }) {
       </div>
     </article>
   );
+}
+
+/** What we know about the result. Status decides; a missing winner never means "no result". */
+function ResultLine({ row }: { row: TenderRow }) {
+  if (row.winner_name) {
+    return (
+      <div class="small">
+        {vi.tenderCard.winner}: <strong>{row.winner_name}</strong>
+      </div>
+    );
+  }
+  const text =
+    row.status === 'awarded' ? vi.tenderCard.winnerUnknown : row.status === 'cancelled' ? vi.tenderCard.cancelled : vi.tenderCard.notAwarded;
+  return <div class="small muted">{text}</div>;
 }
 
 export function TenderTable({ rows, labelledBy, showWinner = true }: { rows: TenderRow[]; labelledBy: string; showWinner?: boolean }) {

@@ -57,19 +57,26 @@ describe('createStaticDataSource', () => {
     await expect(ds.meta()).rejects.toMatchObject({ kind: 'network', message: expect.stringContaining('500') });
   });
 
+  it('treats the static host\'s HTML fallback for a missing file as not_found', async () => {
+    // Cloudflare Pages and `vite preview` answer unknown paths with index.html and HTTP 200.
+    const html = new Response('<!doctype html><html></html>', { status: 200, headers: { 'content-type': 'text/html; charset=utf-8' } });
+    const ds = createStaticDataSource('/', vi.fn(async () => html));
+    await expect(ds.topic('constructor')).rejects.toMatchObject({ kind: 'not_found' });
+  });
+
   it('reports malformed JSON as invalid', async () => {
     const ds = createStaticDataSource('/', vi.fn(async () => new Response('{not json', { status: 200 })));
     await expect(ds.tenders()).rejects.toMatchObject({ kind: 'invalid' });
   });
 
   it('exposes every list and entity file', async () => {
-    const files = ['buyers', 'contractors', 'tenders', 'topics', 'provinces', 'meta'];
+    const files = ['buyers', 'contractors', 'tenders', 'topics', 'provinces', 'meta', 'latest'];
     const fetchFn = fakeFetch(Object.fromEntries([
       ...files.map((f) => [`/data/${f}.json`, f]),
       ...['tender', 'contractor', 'buyer', 'topic'].map((f) => [`/data/${f}/x1.json`, f]),
     ]));
     const ds = createStaticDataSource('/', fetchFn);
-    expect(await Promise.all([ds.buyers(), ds.contractors(), ds.tenders(), ds.topics(), ds.provinces(), ds.meta()])).toEqual(files);
+    expect(await Promise.all([ds.buyers(), ds.contractors(), ds.tenders(), ds.topics(), ds.provinces(), ds.meta(), ds.latest()])).toEqual(files);
     expect(await Promise.all([ds.tender('x1'), ds.contractor('x1'), ds.buyer('x1'), ds.topic('x1')])).toEqual(['tender', 'contractor', 'buyer', 'topic']);
   });
 

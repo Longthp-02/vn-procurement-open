@@ -66,3 +66,9 @@ def test_median_unit_cost():
           tender(award_vnd=900, units={"kind": "classroom", "count": 10}),
           tender(award_vnd=500, units=None)]
     assert m.median_unit_cost(ts, "classroom") == {"value": 95.0, "n": 2}
+
+
+def test_top_share_n_counts_tenders_not_contractors():
+    ts = [tender(award_vnd=60, bids=bids("a", winner="a")), tender(award_vnd=30, bids=bids("a", winner="a")),
+          tender(award_vnd=10, bids=bids("b", winner="b"))]
+    assert m.top_share(ts) == {"value": pytest.approx(1.0), "n": 3}

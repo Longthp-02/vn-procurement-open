@@ -20,6 +20,7 @@ First prove the thinnest end-to-end path (sample data → site JSON → home pag
 - Pipeline tests use real files in a temp directory (no mocking of the filesystem).
 - Web behavior tests use an in-memory `DataSource` fake, never network calls.
 - Never call muasamcong from tests.
+- Fakes hide host behavior: anything the static host does (e.g. Cloudflare Pages serving `index.html` with 200 for a missing file) needs a test against the real adapter (`web/src/lib/data.test.ts`), plus a browser check of the built site.
 
 ## Flaky Test Rule
 A flaky test is a failing test. Fix or delete it with an explanation in the PR; never retry-until-green.

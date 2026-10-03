@@ -98,7 +98,7 @@ export const contractorRows: ContractorRow[] = [{ id: contractor.id, name: contr
 
 export function fakeDataSource(over: Partial<DataSource> = {}): DataSource {
   const byId = <T,>(map: Record<string, T>) => async (id: string): Promise<T> => {
-    if (id in map) return map[id];
+    if (Object.hasOwn(map, id)) return map[id];
     throw new DataError('not_found', id);
   };
   return {
@@ -108,6 +108,7 @@ export function fakeDataSource(over: Partial<DataSource> = {}): DataSource {
     tenders: async () => tenderRows,
     buyers: async () => buyerRows,
     contractors: async () => contractorRows,
+    latest: async () => tenderRows.filter((r) => r.status === 'awarded'),
     tender: byId({ [tender.id]: tender, [tenderUnknownBids.id]: tenderUnknownBids }),
     contractor: byId({ [contractor.id]: contractor }),
     buyer: byId({ [buyer.id]: buyer }),

@@ -45,6 +45,25 @@ describe('Tender list page', () => {
     expect(screen.getByRole('link', { name: 'Trang trước' }).getAttribute('href')).toBe('/tenders?page=1');
   });
 
+  it('never labels an awarded tender as having no result when the winner is unknown (review P2-1)', async () => {
+    const rows = [{ ...tenderRows[0], winner: null, winner_name: null, winner_tax: null, bidders: null }];
+    renderAt('/tenders', fakeDataSource({ tenders: async () => rows }));
+    expect(await screen.findByText('Đã có kết quả, chưa rõ nhà thầu trúng')).toBeTruthy();
+    expect(screen.queryByText('Chưa có kết quả')).toBeNull();
+  });
+
+  it('labels cancelled tenders as cancelled', async () => {
+    const rows = [{ ...tenderRows[2], status: 'cancelled' as const }];
+    renderAt('/tenders', fakeDataSource({ tenders: async () => rows }));
+    expect(await screen.findByText('Gói thầu đã bị hủy')).toBeTruthy();
+  });
+
+  it('clamps a page number past the end to the last page', async () => {
+    renderAt('/tenders?page=99');
+    expect(await screen.findByText('3 gói thầu')).toBeTruthy();
+    expect(screen.getAllByRole('article')).toHaveLength(3);
+  });
+
   it('says so when nothing matches', async () => {
     renderAt('/tenders?q=khong%20co%20goi%20nao');
     expect(await screen.findByText('Không có gói thầu nào khớp với tìm kiếm.')).toBeTruthy();

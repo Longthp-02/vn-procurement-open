@@ -3,6 +3,7 @@ import { Link, useLocation } from 'wouter-preact';
 import { vi } from '../../i18n/vi';
 import { asset } from '../../lib/config';
 import { formatCount, formatPercent, formatVnd } from '../../lib/format';
+import { topicInfo } from '../../lib/topics';
 import { Bar, Loaded, Section, Stat, TenderCard } from '../../lib/ui';
 import { useData, useTitle } from '../../lib/useData';
 import type { ProvinceRow } from '../../lib/types';
@@ -13,12 +14,12 @@ const LATEST = 5;
 export function HomePage() {
   useTitle(vi.site.name);
   const result = useData(
-    (ds) => Promise.all([ds.meta(), ds.provinces(), ds.topics(), ds.tenders()]),
+    (ds) => Promise.all([ds.meta(), ds.provinces(), ds.topics(), ds.latest()]),
     'home',
   );
   return (
     <Loaded result={result}>
-      {([meta, provinces, topics, tenders]) => (
+      {([meta, provinces, topics, latest]) => (
         <>
           <Hero provinces={provinces} />
           <div class="container stack-xl page">
@@ -40,10 +41,10 @@ export function HomePage() {
               <div class="grid-cards">
                 {topics.map((tp) => (
                   <Link key={tp.id} href={`/topic/${tp.id}`} class="card topic-card">
-                    <span class="topic-name">{vi.topic[tp.id]?.name ?? tp.id}</span>
-                    <span class="muted small">{vi.topic[tp.id]?.desc}</span>
+                    <span class="topic-name">{topicInfo(tp.id).name}</span>
+                    <span class="muted small">{topicInfo(tp.id).desc}</span>
                     <span class="num muted small">
-                      {formatCount(tp.tenders)} gói · {formatVnd(tp.award_value_vnd)}
+                      {vi.packages(formatCount(tp.tenders))} · {formatVnd(tp.award_value_vnd)}
                     </span>
                   </Link>
                 ))}
@@ -52,7 +53,9 @@ export function HomePage() {
 
             <Section id="moi-nhat" title={t.latestTitle}>
               <div class="stack">
-                {tenders.filter((r) => r.status === 'awarded').slice(0, LATEST).map((r) => <TenderCard key={r.id} row={r} />)}
+                {latest.slice(0, LATEST).map((r) => (
+                  <TenderCard key={r.id} row={r} />
+                ))}
               </div>
               <Link href="/tenders" class="strong">
                 {t.seeAll}

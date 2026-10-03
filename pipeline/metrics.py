@@ -91,15 +91,16 @@ def award_value(tenders):
 
 def top_share(tenders, k=5):
     """Share of total award value won by the k largest contractors."""
-    by_c = {}
+    by_c, used = {}, 0
     for t in tenders:
         w = winner(t)
         if is_awarded(t) and w:
             by_c[w["id"]] = by_c.get(w["id"], 0) + t["award_vnd"]
+            used += 1
     total = sum(by_c.values())
     if not total:
         return _ind(None, 0)
-    return _ind(sum(sorted(by_c.values(), reverse=True)[:k]) / total, len(by_c))
+    return _ind(sum(sorted(by_c.values(), reverse=True)[:k]) / total, used)
 
 
 def median_unit_cost(tenders, kind):

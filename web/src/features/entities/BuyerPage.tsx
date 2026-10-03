@@ -61,7 +61,7 @@ function BuyerView({ b, meta }: { b: Buyer; meta: Meta }) {
                 <div class="spread">
                   <Link href={`/contractor/${c.id}`}>{c.name}</Link>
                   <span class="num muted">
-                    {c.count} gói · {formatPercent(c.share)}
+                    {vi.packages(String(c.count))} · {formatPercent(c.share)}
                   </span>
                 </div>
                 <Bar ratio={c.share} tone="orange" />

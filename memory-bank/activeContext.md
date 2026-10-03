@@ -18,5 +18,5 @@ Web MVP on sample data is live at https://minhbachdauthau.pages.dev (PR #1 merge
 - Spike results from the live site
 
 ## Next Safe Step
-1. Second-pass review of PR #1 with a fresh agent (`.github/skills/second-pass-review/SKILL.md`).
+1. Merge the review-fixes PR after CI and preview check.
 2. Owner runs the spike (`spike/README.md`) and shares `report/report.md`; then plan the crawler.

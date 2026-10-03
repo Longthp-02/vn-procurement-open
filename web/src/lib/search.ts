@@ -2,13 +2,13 @@ import type { Status, TenderRow } from './types';
 
 export type TenderFilter = { q?: string; province?: string; status?: Status | '' };
 
-/** Lowercase, strip Vietnamese diacritics (đ → d) and collapse whitespace, so "Đà Nẵng" matches "da nang". */
+/** Lowercase, strip Vietnamese diacritics (including d-stroke U+0111/U+0110 -> d) and collapse whitespace, so "Da Nang" with or without accents matches. */
 export function normalizeVi(text: string): string {
   return text
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
+    .replace(/\u0111/g, 'd')
+    .replace(/\u0110/g, 'D')
     .toLowerCase()
     .replace(/\s+/g, ' ')
     .trim();
