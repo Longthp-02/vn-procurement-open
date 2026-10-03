@@ -1,0 +1,10 @@
+# Raw data and session cookies: never commit
+captures/
+raw/
+report/
+report_*/
+*.curl
+storage_state.json
+__pycache__/
+.venv/
+.env
